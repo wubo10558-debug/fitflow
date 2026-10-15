@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>增肌训练手册 · FitFlow</title>
+<meta name="description" content="个人增肌训练站:180cm · 68.5kg · 卧推 55kg、深蹲 70kg 起步,训练日志与进度曲线实时更新,数据保存在本机。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%235e6ad2%22/><text x=%2250%22 y=%2273%22 font-size=%2262%22 text-anchor=%22middle%22 fill=%22white%22 font-family=%22Arial%22 font-weight=%22bold%22>F</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#5e6ad2">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="增肌训练手册">
+</head>
+<body>
+
+<header class="hero" id="top">
+  <div class="hero-inner">
+    <p class="kicker">PERSONAL TRAINING OPS · 2025 → 2027</p>
+    <h1>增肌训练手册</h1>
+    <p class="sub">180cm · 68.5kg · 目标增肌 —— 从卧推 55kg、深蹲 70kg 起步(2025-12),每次训练记录一笔,进度实时更新</p>
+
+    <div class="hero-grid">
+      <div class="card">
+        <p class="card-label">身体数据</p>
+        <ul class="stat-list" id="bodyList"></ul>
+      </div>
+      <div class="card">
+        <p class="card-label">力量进度 · 估算 1RM</p>
+        <div id="strengthList"></div>
+      </div>
+      <div class="card">
+        <p class="card-label">训练状态</p>
+        <ul class="stat-list">
+          <li><span>距起点(2025-12)</span><b id="statDays">--</b></li>
+          <li><span>训练记录</span><b id="statCount">--</b></li>
+          <li><span>连续打卡</span><b id="statStreak">--</b></li>
+          <li><span>最近训练</span><b id="statLast">--</b></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="overall">
+      <div class="bar"><div class="bar-fill" id="overallBar"></div></div>
+      <p class="muted small" id="overallLabel" style="margin-top:6px">--</p>
+    </div>
+
+    <div class="hero-actions">
+      <button class="btn" id="btnTheme">深色模式</button>
+      <button class="btn primary" id="btnSettings">个性化设置</button>
+      <button class="btn ghost" id="btnExport">导出备份</button>
+      <button class="btn ghost" id="btnImport">恢复备份</button>
+      <input type="file" id="importFile" accept=".json" hidden>
+    </div>
+    <p class="saved muted" id="savedAt"></p>
+  </div>
+</header>
+
+<nav id="nav" aria-label="页面导航"></nav>
+
+<main>
+  <section id="overview"><div class="wrap">
+    <h2>总览 <span class="h2-sub">起点 → 现在 → 目标</span></h2>
+    <p class="muted">增肌塑形 · 每周 4 练 · 每动作 4 组 × 8–12 次 · 组间休息 90 秒 · 重点:深蹲 / 卧推 / 划船。图中虚线为起点与目标,每记一笔训练日志,曲线即时更新。</p>
+    <div class="chart-grid">
+      <div class="card chart-card"><p class="card-label">卧推 · 估算 1RM(kg)</p><div class="chart" id="chartBench"></div></div>
+      <div class="card chart-card"><p class="card-label">深蹲 · 估算 1RM(kg)</p><div class="chart" id="chartSquat"></div></div>
+      <div class="card chart-card"><p class="card-label">体重(kg)</p><div class="chart" id="chartWeight"></div></div>
+    </div>
+  </div></section>
+
+  <section id="plan"><div class="wrap">
+    <h2>训练计划 <span class="h2-sub">私教式 · 基于你的数据自动生成</span></h2>
+    <p class="muted">每周 4 练上下肢分化,主项重量按你的最新 1RM 自动计算,每记一笔日志都会更新。今天:<b id="todayPlan">--</b></p>
+    <div class="card today-card" id="todayCard"></div>
+    <div class="plan-grid">
+      <div class="card">
+        <p class="card-label">本周安排</p>
+        <ul class="stat-list" id="scheduleList"></ul>
+      </div>
+      <div class="card">
+        <p class="card-label">本周重量建议</p>
+        <div class="table-scroll" id="weightTable"></div>
+      </div>
+    </div>
+    <div class="day-grid" id="dayGrid"></div>
+    <div class="plan-grid">
+      <div class="card">
+        <p class="card-label">进阶规则 · 什么时候加重</p>
+        <ul class="rule-list" id="rulesList"></ul>
+      </div>
+      <div class="card">
+        <p class="card-label">热身与拉伸</p>
+        <div id="warmupBox"></div>
+      </div>
+    </div>
+  </div></section>
+
+  <section id="log"><div class="wrap">
+    <h2>训练日志 <span class="h2-sub">每次练完记一笔,自动保存</span></h2>
+    <form class="card log-form" id="logForm">
+      <div class="fields">
+        <div class="field"><label>日期</label><input type="date" id="fDate"></div>
+        <div class="field"><label>动作</label><select id="fEx">
+          <option>卧推</option><option>深蹲</option><option>硬拉</option><option>肩推</option>
+          <option>引体向上</option><option>俯身划船</option><option>弯举</option><option>其他</option>
+        </select></div>
+        <div class="field"><label>重量 kg</label><input type="number" id="fWeight" step="0.5" min="0" placeholder="60"></div>
+        <div class="field"><label>次数</label><input type="number" id="fReps" min="1" placeholder="5"></div>
+        <div class="field"><label>组数</label><input type="number" id="fSets" min="1" value="3"></div>
+        <div class="field"><label>体重 kg(选填)</label><input type="number" id="fBw" step="0.1" min="0" placeholder="68.5"></div>
+        <div class="field"><label>备注(选填)</label><input type="text" id="fNote" placeholder="状态不错"></div>
+        <div class="field field-btn"><button class="btn primary" type="submit">添加记录</button></div>
+      </div>
+      <p class="muted small" id="logFormMsg" style="margin:8px 0 0;color:var(--bad)"></p>
+    </form>
+    <div id="logSummary" style="margin:0 0 10px"></div>
+    <div id="logTable"></div>
+  </div></section>
+
+  <section id="nutrition"><div class="wrap">
+    <h2>饮食建议 <span class="h2-sub">增肌三分练七分吃</span></h2>
+    <p class="muted">营养目标按你当前的体重与活动量自动计算,体重有变化时同步更新。</p>
+    <div class="chart-grid">
+      <div class="card"><p class="card-label">今日营养目标</p><ul class="stat-list" id="macroList"></ul></div>
+      <div class="card"><p class="card-label">一日三餐结构</p><ul class="pair-list" id="mealList"></ul></div>
+      <div class="card"><p class="card-label">恢复与注意</p><ul class="pair-list" id="recoverList"></ul></div>
+    </div>
+  </div></section>
+
+  <section id="library"><div class="wrap">
+    <h2>动作库 <span class="h2-sub">按目标肌群筛选</span></h2>
+    <div class="filter-bar" id="filterBar"></div>
+    <div class="ex-grid" id="exerciseGrid"></div>
+  </div></section>
+
+  <section id="tools"><div class="wrap">
+    <h2>工具 <span class="h2-sub">HIIT 计时 · 身体指标</span></h2>
+    <div class="tools-grid">
+      <div class="card tool-card" id="timerCard">
+        <p class="card-label">HIIT 计时器</p>
+        <div class="timer-phase" id="timerPhase">训练中</div>
+        <div class="timer-display" id="timerDisplay">20</div>
+        <div class="timer-round" id="timerRound">第 1 / 8 组</div>
+        <div class="timer-controls">
+          <label>训练<select id="workSelect">
+            <option value="10">10 秒</option><option value="15">15 秒</option>
+            <option value="20" selected>20 秒</option><option value="30">30 秒</option>
+            <option value="45">45 秒</option><option value="60">60 秒</option>
+          </select></label>
+          <label>休息<select id="restSelect">
+            <option value="5">5 秒</option><option value="10" selected>10 秒</option>
+            <option value="15">15 秒</option><option value="20">20 秒</option>
+            <option value="30">30 秒</option>
+          </select></label>
+          <label>组数<select id="roundsSelect">
+            <option>4</option><option>6</option><option selected>8</option><option>10</option><option>12</option>
+          </select></label>
+        </div>
+        <div class="timer-actions">
+          <button class="btn primary" id="timerStart">开始</button>
+          <button class="btn ghost" id="timerReset">重置</button>
+        </div>
+        <p class="muted small" style="text-align:center;margin-top:12px">阶段切换时响铃提示 · 空格键开始/暂停</p>
+      </div>
+
+      <div class="card tool-card">
+        <p class="card-label">身体指标</p>
+        <div class="bmi-form">
+          <div class="fields">
+            <div class="field"><label>身高 cm</label><input type="number" id="bmiHeight"></div>
+            <div class="field"><label>体重 kg</label><input type="number" id="bmiWeight"></div>
+            <div class="field"><label>年龄</label><input type="number" id="bmiAge"></div>
+            <div class="field"><label>性别</label><span class="radio-line">
+              <label class="radio"><input type="radio" name="gender" value="male" checked>男</label>
+              <label class="radio"><input type="radio" name="gender" value="female">女</label>
+            </span></div>
+            <div class="field field-btn"><button class="btn primary" id="bmiCalc">计算</button></div>
+          </div>
+        </div>
+        <div class="bmi-result" id="bmiResult">
+          <p class="muted small">已按档案预填身高体重,点击计算查看 BMI、基础代谢与增肌热量。</p>
+        </div>
+      </div>
+    </div>
+  </div></section>
+
+  <section id="checkin"><div class="wrap">
+    <h2>每日打卡 <span class="h2-sub">坚持,是最好的训练计划</span></h2>
+    <div class="card checkin-card">
+      <div class="streak-row">
+        <span class="streak-num" id="streakNum">0</span>
+        <span class="muted">连续打卡天数</span>
+      </div>
+      <div class="week-row" id="weekRow"></div>
+      <button class="btn primary" id="checkinBtn">今日打卡完成</button>
+      <p class="muted small" style="margin-top:10px">记录保存在本机浏览器,可随备份导出。</p>
+    </div>
+  </div></section>
+</main>
+
+<footer>FitFlow · 增肌训练手册 · 数据仅存本机浏览器</footer>
+
+<div class="modal-backdrop" id="settingsModal" hidden>
+  <div class="modal">
+    <h3 style="margin:0 0 14px;font-size:16px">个性化设置</h3>
+    <form id="settingsForm">
+      <div class="fields two">
+        <div class="field"><label>年龄</label><input type="number" id="sAge" min="10" max="100"></div>
+        <div class="field"><label>性别</label><span class="radio-line">
+          <label class="radio"><input type="radio" name="sGender" value="male">男</label>
+          <label class="radio"><input type="radio" name="sGender" value="female">女</label>
+        </span></div>
+        <div class="field"><label>活动系数</label><select id="sActivity">
+          <option value="1.2">久坐少动</option>
+          <option value="1.375">轻度(1–3 练/周)</option>
+          <option value="1.55">中度(3–5 练/周)</option>
+          <option value="1.725">高强度(6–7 练/周)</option>
+        </select></div>
+        <div class="field"><label>目标体重 kg</label><input type="number" id="sWeight" step="0.5"></div>
+        <div class="field"><label>目标卧推 kg</label><input type="number" id="sBench" step="0.5"></div>
+        <div class="field"><label>目标深蹲 kg</label><input type="number" id="sSquat" step="0.5"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn ghost" type="button" id="btnSettingsClose">取消</button>
+        <button class="btn primary" type="submit">保存</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-backdrop coach-backdrop" id="coachModal" hidden>
+  <div class="coach">
+    <div class="coach-head">
+      <p class="kicker" id="coachKicker">TRAINING SESSION</p>
+      <button class="btn ghost" id="coachClose" type="button">退出</button>
+    </div>
+    <div class="coach-body" id="coachBody"></div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
